@@ -23,7 +23,7 @@ import 'package:json_schema_builder/json_schema_builder.dart';
 
 /// The basic catalog under its own id, with the custom components the
 /// examples name: `CustomGrid` and `CustomSlider`.
-final WidgetCatalog demoCatalog = WidgetCatalog(
+final CatalogImplementation demoCatalog = CatalogImplementation(
   id: BasicCatalog.v0_9Id,
   components: [...BasicComponents.all, customGrid, customSlider],
   functions: BasicCatalog.v0_9().functions.values.toList(),
