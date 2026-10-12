@@ -1,5 +1,7 @@
 ## Unreleased
 
+- **BREAKING CHANGE**: Render `<a2ui-surface>` into the Light DOM instead of a Shadow Root (removing the `loading` `<slot>`) so host and page stylesheets can target components inside a surface directly ([#3154](https://github.com/a2ui-project/a2ui/pull/3154)).
+
 ## 0.13.0
 
 - Bump dependencies for compatibility with `@a2ui/web_core: ^0.13.0`.
