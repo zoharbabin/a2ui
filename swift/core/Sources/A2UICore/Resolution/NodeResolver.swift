@@ -39,19 +39,41 @@ public final class NodeResolver: Sendable {
   private var currentComponentID: String?
   private var currentPropertyPath: String?
 
+  /// Whether this resolver follows v1.0 rules.
+  ///
+  /// Uses `protocolVersion` when set. Otherwise it is taken from the default catalog, or, with
+  /// no default, it holds when every catalog is at least v1.0.
   public var isV10: Bool {
     if let protocolVersion {
       return protocolVersion.isAtLeastV10
     }
-    return catalog.isAtLeastV10
+    if let defaultCatalog {
+      return defaultCatalog.isAtLeastV10
+    }
+    return !catalogs.isEmpty && catalogs.values.allSatisfy(\.isAtLeastV10)
   }
 
   /// The primary default catalog associated with this resolver.
+  ///
+  /// When there is no default catalog this falls back to an arbitrary available catalog, or an
+  /// empty one, so it must not be used to resolve what a component or function call runs in:
+  /// from v1.0 a surface may have no default catalog. Use ``getCatalog(id:)`` instead.
   public var catalog: AnyCatalog {
     if let defaultCatalogID, let catalog = catalogs[defaultCatalogID] {
       return catalog
     }
     return catalogs.values.first ?? Catalog(id: "empty", components: [])
+  }
+
+  /// The default catalog, if this resolver has one and it is available.
+  private var defaultCatalog: AnyCatalog? {
+    defaultCatalogID.flatMap { catalogs[$0] }
+  }
+
+  /// The protocol version used for evaluation and error envelopes: `protocolVersion` when set,
+  /// else the default catalog's version, else v1.0 when every catalog is at least v1.0.
+  private var effectiveProtocolVersion: A2UIProtocolVersion? {
+    protocolVersion ?? defaultCatalog?.a2uiProtocolVersion ?? (isV10 ? .v10 : nil)
   }
 
   // MARK: - Initialization
@@ -110,7 +132,7 @@ public final class NodeResolver: Sendable {
     self.init(
       surfaceID: surfaceID,
       catalogs: dict,
-      defaultCatalogID: defaultCatalogID ?? (catalogs.count == 1 ? catalogs.first?.id : nil),
+      defaultCatalogID: defaultCatalogID,
       componentsModel: componentsModel,
       dataModel: dataModel,
       actionHandler: actionHandler,
@@ -549,7 +571,7 @@ public final class NodeResolver: Sendable {
       dataModel: dataModel,
       path: basePath ?? "",
       functionHandler: self,
-      protocolVersion: protocolVersion ?? catalog.a2uiProtocolVersion,
+      protocolVersion: effectiveProtocolVersion,
       index: index
     )
     return context.resolveDynamicValue(value)
@@ -878,7 +900,7 @@ public final class NodeResolver: Sendable {
           let failedChecks = checks.filter { !$0.isValid }
           if !failedChecks.isEmpty {
             let errorMsg = failedChecks.map(\.message).joined(separator: ", ")
-            let version = self.catalog.a2uiProtocolVersion ?? .v10
+            let version = self.effectiveProtocolVersion ?? .v10
             self.actionHandler?.handle(
               error: .validationFailed(
                 ValidationFailedError(
@@ -932,7 +954,7 @@ public final class NodeResolver: Sendable {
           let failedChecks = checks.filter { !$0.isValid }
           if !failedChecks.isEmpty {
             let errorMsg = failedChecks.map(\.message).joined(separator: ", ")
-            let version = self.catalog.a2uiProtocolVersion ?? .v10
+            let version = self.effectiveProtocolVersion ?? .v10
             self.actionHandler?.handle(
               error: .validationFailed(
                 ValidationFailedError(
@@ -1049,11 +1071,35 @@ extension NodeResolver: FunctionHandler {
     return getCatalog(id: callCatalogID)?.functions[name]
   }
 
+  /// Checks that the catalog a v1.0 function call runs in resolves on this surface: the
+  /// catalog the call names, else the default catalog.
+  ///
+  /// - Throws: `A2UICatalogError` with the detail code `CATALOG_ERROR` if the named catalog is
+  ///   not available, or the call names none and there is no default catalog.
+  public func validateFunctionCatalog(id catalogID: String?, functionName: String) throws {
+    let path = CatalogResolutionErrors.callCatalogIDPath(functionName: functionName)
+    let code = CatalogResolutionErrors.runtimeCatalogErrorCode
+    if let catalogID {
+      guard catalogs[catalogID] != nil else {
+        throw CatalogResolutionErrors.catalogNotFound(catalogID, path: path, code: code)
+      }
+      return
+    }
+    guard let defaultCatalogID else {
+      throw CatalogResolutionErrors.noDefaultCatalog(
+        subject: "Function call '\(functionName)'",
+        surfaceID: surfaceID,
+        path: path,
+        code: code
+      )
+    }
+    guard catalogs[defaultCatalogID] != nil else {
+      throw CatalogResolutionErrors.catalogNotFound(defaultCatalogID, path: path, code: code)
+    }
+  }
+
   public func handleFunctionError(_ error: any Error, functionName: String) {
-    let version =
-      protocolVersion
-      ?? catalog.a2uiProtocolVersion
-      ?? (isV10 ? .v10 : .v09)
+    let version = effectiveProtocolVersion ?? .v09
     let rendererError = MessageErrorMapper().map(
       error,
       surfaceID: surfaceID,
