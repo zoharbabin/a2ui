@@ -179,7 +179,7 @@ export class PayloadValidator {
    * @throws {A2uiValidationError} If the function name or any argument key is not a valid UAX #31 identifier.
    */
   private assertFunctionIdentifiers(name: string, args: unknown): void {
-    this.assertIdentifier(name, `Function name '${name}' must be a valid UAX #31 identifier`);
+    this.assertIdentifier(name, `Function name '${name}' must be a valid UAX #31 identifier`, true);
     if (args && typeof args === 'object' && !Array.isArray(args)) {
       const keys = Object.keys(args);
       if (keys.length > MAX_FUNCTION_CALL_ARGS) {
@@ -323,9 +323,9 @@ export class PayloadValidator {
    * @param message Error message to use when validation fails.
    * @throws {A2uiValidationError} If identifier enforcement is active and `name` is invalid.
    */
-  private assertIdentifier(name: string, message: string): void {
+  private assertIdentifier(name: string, message: string, allowLeadingAt = false): void {
     if (!this.enforceIdentifiers) return;
-    if (!isValidUax31Identifier(name)) {
+    if (!isValidUax31Identifier(name, allowLeadingAt)) {
       throw new A2uiValidationError(message);
     }
   }
