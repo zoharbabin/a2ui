@@ -1,5 +1,7 @@
 ## Unreleased
 
+- **BREAKING**: Move `a2ui.inference_formats.experimental.express` to
+  `a2ui.inference_formats.express`.
 - `DirectJsonParser.parse_chunk` raises `A2uiValidationError` on the chunk that
   closes an invalid v1.0 component. Previously the error was swallowed until the
   block ended, and every component after it was held back.

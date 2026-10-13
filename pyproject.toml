@@ -139,5 +139,4 @@ module = [
     "antlr4.*",
 ]
 follow_imports = "skip"
-ignore_errors = true
 ignore_missing_imports = true
