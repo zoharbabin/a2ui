@@ -9,6 +9,7 @@
 - A component loaded with `Catalog.fromJson` keeps a property it declares itself over one a mixin such as `ComponentCommon` or `Checkable`, or a local definition, also declares, in both its Zod schema and `validationSchema`.
 - A component loaded with `Catalog.fromJson` treats `catalogId` as an envelope key like `id` and `component`: its Zod schema no longer declares it, as `validationSchema` already did not. `PayloadValidator` still accepts a component that carries it.
 - `MessageProcessor.getRendererCapabilities` sends each v1.0 inline catalog as its `toJson()` document, with the catalog's `catalogId` and a bare semantic version `protocolVersion`.
+- Add the `a2ui-error-message` class to `TextField` validation messages, matching the other basic catalog inputs ([#3169](https://github.com/a2ui-project/a2ui/pull/3169)).
 
 ## 0.13.0
 

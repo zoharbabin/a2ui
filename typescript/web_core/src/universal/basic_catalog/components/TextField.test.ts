@@ -166,7 +166,7 @@ describe('TextField Component', () => {
       e.context = context;
     });
 
-    const errors = el.querySelectorAll('.error');
+    const errors = el.querySelectorAll('.a2ui-error-message');
     assert.strictEqual(errors.length, 2);
     assert.strictEqual(errors[0].textContent?.trim(), 'Email is required');
     assert.strictEqual(errors[1].textContent?.trim(), 'Email must contain @');

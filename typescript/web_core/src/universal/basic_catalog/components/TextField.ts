@@ -73,7 +73,8 @@ export class A2uiBasicTextFieldElement extends BasicCatalogA2uiLitElement<TextFi
       );
       font-weight: var(--a2ui-textfield-label-font-weight, var(--a2ui-label-font-weight, bold));
     }
-    .error {
+    .error,
+    .a2ui-error-message {
       color: var(--a2ui-textfield-color-error, red);
       font-size: var(--a2ui-font-size-xs, 0.75rem);
     }
@@ -110,9 +111,7 @@ export class A2uiBasicTextFieldElement extends BasicCatalogA2uiLitElement<TextFi
             .value=${props.value || ''}
             @input=${onInput}
           />`}
-      ${isInvalid && props.validationErrors?.length
-        ? props.validationErrors.map((err: string) => html`<div class="error">${err}</div>`)
-        : nothing}
+      ${this.renderValidationErrors(props)}
     `;
   }
 }
