@@ -19,8 +19,6 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Type
 
-from google.adk.utils.feature_decorator import experimental
-
 from a2ui.core import CatalogApi
 from a2ui.core.schema import AgentToRendererMessage
 from a2ui.inference_formats._shared import check_mixed_catalogs
@@ -52,7 +50,6 @@ def _compilation_error_class(error: BaseException) -> Type[A2uiCompilationError]
     return A2uiCompilationError
 
 
-@experimental
 class ExpressParser(Parser):
     """Concrete parser implementation for A2UI Express DSL responses."""
 

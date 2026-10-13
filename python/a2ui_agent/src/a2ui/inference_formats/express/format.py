@@ -16,8 +16,6 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from google.adk.utils.feature_decorator import experimental
-
 from a2ui.core import CatalogApi
 from a2ui.core.schema import AgentToRendererMessage
 from a2ui.inference_format import InferenceFormat
@@ -30,7 +28,6 @@ from .parser import ExpressParser
 from .prompt_generator import ExpressPromptGenerator
 
 
-@experimental
 class ExpressFormat(InferenceFormat):
     """Concrete strategy for Express DSL representation."""
 
