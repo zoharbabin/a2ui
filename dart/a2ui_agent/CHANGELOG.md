@@ -2,8 +2,10 @@
 
 ## Unreleased
 
-- The Direct JSON prompt builds its schema from `Catalog.validationSchema`
-  instead of the deprecated `catalogSchema`.
+- `DirectJsonPromptGenerator` embeds the agent-to-renderer schema, the pruned
+  `common_types` schema, and each active catalog's `Catalog.toJson()` document
+  instead of `Catalog.validationSchema`, avoiding duplicate inlined common type
+  definitions when multiple catalogs are active.
 - Payload validation builds its `MessageProcessor` with `defaultVersion`.
 - Payload validation gives `MessageProcessor` the catalog through
   `Catalog.withFunctions`, so a catalog read by `Catalog.fromJson` keeps its
